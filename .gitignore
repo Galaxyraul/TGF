@@ -1,0 +1,12 @@
+*dataset*/
+*results*/
+develop/config
+develop/copy
+develop/dnnlib
+*.devcontainer*/
+*.vscode*/
+*~*/
+*__pycache__*/
+*.cache*/
+*Dockerfile*/
+*.github*/

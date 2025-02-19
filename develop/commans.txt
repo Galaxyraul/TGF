@@ -1,0 +1,5 @@
+python train.py --seed=42 --batch=8 --outdir=../../results/stylegan3 --data=../../Datasets_stylegan_test/256x256.zip --cfg=stylegan3-t --gpus=1 --gamma=8.2  --mirror=1  --kimg=100  --aug=noaug
+
+docker run -it -d --gpus=all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -v ./:/work_torch stylegan3 bash
+
+python dataset_tool.py --source=../../datasets_augmented/8x8/train --dest ../../Datasets_stylegan_test/8x8.zip --max-images=16
