@@ -10,3 +10,5 @@ develop/dnnlib
 *.cache*/
 *Dockerfile*/
 *.github*/
+*images*/
+*.idea*/
