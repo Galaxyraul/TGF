@@ -12,7 +12,6 @@ import torch
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--path",type=str,default='./dataset',help="Path of the dataset")
-parser.add_argument("--norm",type=bool,default=True,help="Normalizes images")
 parser.add_argument("--n_epochs", type=int, default=200, help="number of epochs of training")
 parser.add_argument("--batch_size", type=int, default=64, help="size of the batches")
 parser.add_argument("--lr", type=float, default=0.0002, help="adam: learning rate")
@@ -32,7 +31,6 @@ print(opt)
 img_shape = (opt.channels, opt.img_size, opt.img_size)
 
 cuda = True if torch.cuda.is_available() else False
-
 
 def weights_init_normal(m):
     classname = m.__class__.__name__
@@ -117,7 +115,7 @@ generator.apply(weights_init_normal)
 discriminator.apply(weights_init_normal)
 
 # Configure data loader
-dl=DatasetLoader(opt.path,batch_size=opt.batch_size,norm=opt.norm)
+dl=DatasetLoader(opt.path,batch_size=opt.batch_size)
 dataloader = dl.get_train() 
 # Optimizers
 optimizer_G = torch.optim.Adam(generator.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))

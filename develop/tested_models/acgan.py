@@ -17,7 +17,6 @@ from data_loader import DatasetLoader
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--path",type=str,default='./dataset',help="Path of the dataset")
-parser.add_argument("--norm",type=bool,default=True,help="Normalizes images")
 parser.add_argument("--n_epochs", type=int, default=200, help="number of epochs of training")
 parser.add_argument("--batch_size", type=int, default=64, help="size of the batches")
 parser.add_argument("--lr", type=float, default=0.0002, help="adam: learning rate")
@@ -31,7 +30,8 @@ parser.add_argument("--channels", type=int, default=3, help="number of image cha
 parser.add_argument("--sample_interval", type=int, default=400, help="interval between image sampling")
 opt = parser.parse_args()
 print(opt)
-os.makedirs(f"./images/acgan/{opt.img_size}x{opt.img_size}", exist_ok=True)
+filename = os.path.basename(__file__).split('.')[0]
+os.makedirs(f"./images/{filename}/{opt.img_size}x{opt.img_size}", exist_ok=True)
 
 cuda = True if torch.cuda.is_available() else False
 
@@ -128,7 +128,7 @@ if cuda:
 generator.apply(weights_init_normal)
 discriminator.apply(weights_init_normal)
 
-dl=DatasetLoader(opt.path,batch_size=opt.batch_size,norm=opt.norm)
+dl=DatasetLoader(opt.path,batch_size=opt.batch_size)
 dataloader = dl.get_train() 
 
 # Optimizers
@@ -147,7 +147,7 @@ def sample_image(n_row, batches_done):
     labels = np.array([num for _ in range(n_row) for num in range(n_row)])
     labels = Variable(LongTensor(labels))
     gen_imgs = generator(z, labels)
-    save_image(gen_imgs.data, f"images/acgan/{opt.img_size}x{opt.img_size}/{batches_done}.png", nrow=n_row, normalize=True)
+    save_image(gen_imgs.data, f"images/{filename}/{opt.img_size}x{opt.img_size}/{batches_done}.png", nrow=n_row, normalize=True)
 
 
 # ----------

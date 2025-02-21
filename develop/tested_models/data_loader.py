@@ -4,10 +4,8 @@ from torch.utils.data import DataLoader
 import os
 
 class DatasetLoader:
-    def __init__(self,path,batch_size,norm):
-        transformations = [transforms.ToTensor()]
-        if norm:
-            transformations.append(transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]))
+    def __init__(self,path,batch_size):
+        transformations = [transforms.ToTensor(),transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])]
         transform=transforms.Compose(transformations)
         
         self.train_ds = datasets.ImageFolder(root=os.path.join(path,'train'),transform=transform) 

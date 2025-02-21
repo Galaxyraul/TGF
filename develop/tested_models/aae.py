@@ -14,7 +14,7 @@ import torch
 parser = argparse.ArgumentParser()
 #TODO
 parser.add_argument("--path",type=str,default='./dataset',help="Path of the dataset")
-parser.add_argument("--norm",type=bool,default=True,help="Normalizes images")
+
 parser.add_argument("--n_epochs", type=int, default=200, help="number of epochs of training")
 parser.add_argument("--batch_size", type=int, default=64, help="size of the batches")
 parser.add_argument("--lr", type=float, default=0.005, help="adam: learning rate")
@@ -28,7 +28,8 @@ parser.add_argument("--sample_interval", type=int, default=100, help="interval b
 opt = parser.parse_args()
 print(opt)
 #TODO
-os.makedirs(f"./images/aae/{opt.img_size}x{opt.img_size}", exist_ok=True)
+filename = os.path.basename(__file__).split('.')[0]
+os.makedirs(f"./images/{filename}/{opt.img_size}x{opt.img_size}", exist_ok=True)
 img_shape = (opt.channels, opt.img_size, opt.img_size)
 print(img_shape)
 cuda = True if torch.cuda.is_available() else False
@@ -121,7 +122,7 @@ if cuda:
 
 #TODO
 # Configure data loader
-dl=DatasetLoader(opt.path,batch_size=opt.batch_size,norm=opt.norm)
+dl=DatasetLoader(opt.path,batch_size=opt.batch_size)
 dataloader = dl.get_train() 
 
 # Optimizers
@@ -138,7 +139,7 @@ def sample_image(n_row, batches_done):
     # Sample noise
     z = Variable(Tensor(np.random.normal(0, 1, (n_row ** 2, opt.latent_dim))))
     gen_imgs = decoder(z)
-    save_image(gen_imgs.data, f"images/aae/{opt.img_size}x{opt.img_size}/%d.png" % batches_done, nrow=n_row, normalize=True)
+    save_image(gen_imgs.data, f"images/{filename}/{opt.img_size}x{opt.img_size}/{batches_done}.png", nrow=n_row, normalize=True)
 
 
 # ----------

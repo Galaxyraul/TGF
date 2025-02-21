@@ -10,7 +10,6 @@ import torch
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--path",type=str,default='./dataset',help="Path of the dataset")
-parser.add_argument("--norm",type=bool,default=True,help="Normalizes images")
 parser.add_argument("--n_epochs", type=int, default=200, help="number of epochs of training")
 parser.add_argument("--batch_size", type=int, default=64, help="size of the batches")
 parser.add_argument("--lr", type=float, default=0.0002, help="adam: learning rate")
@@ -23,7 +22,8 @@ parser.add_argument("--channels", type=int, default=3, help="number of image cha
 parser.add_argument("--sample_interval", type=int, default=400, help="interval between image sampling")
 opt = parser.parse_args()
 print(opt)
-os.makedirs(f"./images/{__file__.split('.')[0]}/{opt.img_size}x{opt.img_size}", exist_ok=True)
+filename = os.path.basename(__file__).split('.')[0]
+os.makedirs(f"./images/{filename}/{opt.img_size}x{opt.img_size}", exist_ok=True)
 
 cuda = True if torch.cuda.is_available() else False
 
@@ -111,7 +111,7 @@ generator.apply(weights_init_normal)
 discriminator.apply(weights_init_normal)
 
 # Configure data loader
-dl=DatasetLoader(opt.path,batch_size=opt.batch_size,norm=opt.norm)
+dl=DatasetLoader(opt.path,batch_size=opt.batch_size)
 dataloader = dl.get_train() 
 # Optimizers
 optimizer_G = torch.optim.Adam(generator.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))
@@ -171,5 +171,5 @@ for epoch in range(opt.n_epochs):
     )
 
     if not epoch % opt.sample_interval:
-        save_image(gen_imgs.data[:25], f"./images/{__file__.split('.')[0]}/{opt.img_size}x{opt.img_size}/{epoch}.png",nrow=5, normalize=True)
-save_image(gen_imgs.data[:25], f"./images/{__file__.split('.')[0]}/{opt.img_size}x{opt.img_size}/{epoch}.png",nrow=5, normalize=True)
+        save_image(gen_imgs.data[:25], f"./images/{filename}/{opt.img_size}x{opt.img_size}/{epoch}.png",nrow=5, normalize=True)
+save_image(gen_imgs.data[:25], f"./images/{filename}/{opt.img_size}x{opt.img_size}/{epoch}.png",nrow=5, normalize=True)

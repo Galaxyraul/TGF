@@ -31,7 +31,8 @@ parser.add_argument("--channels", type=int, default=3, help="number of image cha
 parser.add_argument("--sample_interval", type=int, default=400, help="interval between image sampling")
 opt = parser.parse_args()
 print(opt)
-os.makedirs(f"./images/cgan/{opt.img_size}x{opt.img_size}", exist_ok=True)
+filename = os.path.basename(__file__).split('.')[0]
+os.makedirs(f"./images/{filename}/{opt.img_size}x{opt.img_size}", exist_ok=True)
 img_shape = (opt.channels, opt.img_size, opt.img_size)
 
 cuda = True if torch.cuda.is_available() else False
@@ -177,6 +178,6 @@ for epoch in range(opt.n_epochs):
         % (epoch, opt.n_epochs, d_loss.item(), g_loss.item())
     )
 
-    if epoch % opt.sample_interval:
-        save_image(gen_imgs.data[:25], f"./images/cgan/{opt.img_size}x{opt.img_size}/{epoch}.png",nrow=5, normalize=True)
-save_image(gen_imgs.data[:25], f"./images/cgan/{opt.img_size}x{opt.img_size}/{epoch}.png",nrow=5, normalize=True)
+    if not epoch % opt.sample_interval:
+        save_image(gen_imgs.data[:25], f"./images/{filename}/{opt.img_size}x{opt.img_size}/{epoch}.png",nrow=5, normalize=True)
+save_image(gen_imgs.data[:25], f"./images/{filename}/{opt.img_size}x{opt.img_size}/{epoch}.png",nrow=5, normalize=True)

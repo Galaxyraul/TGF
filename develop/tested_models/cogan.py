@@ -18,8 +18,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 
-os.makedirs("images", exist_ok=True)
-
 parser = argparse.ArgumentParser()
 parser.add_argument("--path",type=str,default='./dataset',help="Path of the dataset")
 parser.add_argument("--n_epochs", type=int, default=200, help="number of epochs of training")
@@ -34,7 +32,8 @@ parser.add_argument("--channels", type=int, default=3, help="number of image cha
 parser.add_argument("--sample_interval", type=int, default=10, help="interval betwen image samples")
 opt = parser.parse_args()
 print(opt)
-os.makedirs(f"./images/cogan/{opt.img_size}x{opt.img_size}", exist_ok=True)
+filename = os.path.basename(__file__).split('.')[0]
+os.makedirs(f"./images/{filename}/{opt.img_size}x{opt.img_size}", exist_ok=True)
 img_shape = (opt.channels, opt.img_size, opt.img_size)
 
 cuda = True if torch.cuda.is_available() else False
@@ -212,5 +211,5 @@ for epoch in range(opt.n_epochs):
         
     if not epoch % opt.sample_interval:
         gen_imgs = torch.cat((gen_imgs1.data, gen_imgs2.data), 0)
-        save_image(gen_imgs, f"images/cogan/{opt.img_size}x{opt.img_size}.png", nrow=8, normalize=True)
-save_image(gen_imgs, f"images/cogan/{opt.img_size}x{opt.img_size}/{epoch}.png", nrow=8, normalize=True)
+        save_image(gen_imgs, f"images/{filename}/{opt.img_size}x{opt.img_size}/{epoch}.png", nrow=8, normalize=True)
+save_image(gen_imgs, f"images/{filename}/{opt.img_size}x{opt.img_size}/{epoch}.png", nrow=8, normalize=True)
