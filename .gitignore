@@ -12,3 +12,4 @@ develop/dnnlib
 *.github*/
 *images*/
 *.idea*/
+*logs*/

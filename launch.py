@@ -6,11 +6,12 @@ import time
 import csv
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-p','--path',type=str,default='develop/tested_models/',help='Path of the models from the base directory')
+parser.add_argument('-p','--path',type=str,default='develop/gans/',help='Path of the models from the base directory')
 parser.add_argument('-d','--dataset',type=str,default='develop/datasets_augmented/',help='Path of the datset folder from the base directory')
-parser.add_argument('-i','--img_sizes', type=list, default=[16,32,64,128,256], help='list of sizes of each image dimension')
-parser.add_argument('-n','--n_epochs', type=int, default=2000, help='number of epochs of training')
+parser.add_argument('-i','--img_sizes', type=list, default=[16], help='list of sizes of each image dimension')
+parser.add_argument('-n','--n_epochs', type=int, default=500, help='number of epochs of training')
 parser.add_argument('-si','--sample_interval', type=int, default=50, help='interval between image sampling')
+parser.add_argument('-b','--batch_size',type=int,default=16,help='Size of the training batch')
 args = parser.parse_args()
 
 models = os.listdir(path=args.path)
@@ -27,7 +28,7 @@ for size in sizes:
         log_path = f'logs/{models_name[i]}/{size}'
         os.makedirs(log_path,exist_ok=True)
         try:
-            kargs = f'--img_size={size} --n_epochs={args.n_epochs} --path={os.path.join(args.dataset,f"{size}x{size}")} --sample_interval={args.sample_interval} --channels=3'
+            kargs = f'--img_size={size} --n_epochs={args.n_epochs} --path={os.path.join(args.dataset,f"{size}x{size}")} --sample_interval={args.sample_interval} --channels=3 --batch_size={args.batch_size}'
             print(f'Lanzando modelo:{model}:\nParametros:{kargs}')
             start = time.time()
             log = subprocess.run(f'conda run -n {conda_env} python {model} {kargs}',shell=True,capture_output=True,text=True)
@@ -39,6 +40,7 @@ for size in sizes:
             i+=1
         except Exception as e:
             print(f"Error occurred: {e}", file=sys.stderr)
+            continue
 
 filename = 'times.csv'
 total_time=0

@@ -14,7 +14,6 @@ import torch
 parser = argparse.ArgumentParser()
 #TODO
 parser.add_argument("--path",type=str,default='./dataset',help="Path of the dataset")
-
 parser.add_argument("--n_epochs", type=int, default=200, help="number of epochs of training")
 parser.add_argument("--batch_size", type=int, default=64, help="size of the batches")
 parser.add_argument("--lr", type=float, default=0.005, help="adam: learning rate")

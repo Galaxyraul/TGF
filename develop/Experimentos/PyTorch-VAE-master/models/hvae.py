@@ -8,12 +8,12 @@ from .types_ import *
 class HVAE(BaseVAE):
 
     def __init__(self,
-                 in_channels: int,
-                 latent1_dim: int,
-                 latent2_dim: int,
-                 hidden_dims: List = None,
-                 img_size:int = 64,
-                 pseudo_input_size: int = 128,
+                in_channels: int,
+                latent1_dim: int,
+                latent2_dim: int,
+                hidden_dims: List = None,
+                img_size:int = 64,
+                pseudo_input_size: int = 128,
                  **kwargs) -> None:
         super(HVAE, self).__init__()
 

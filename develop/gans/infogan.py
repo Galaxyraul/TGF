@@ -1,25 +1,19 @@
 import argparse
 import os
 import numpy as np
-import math
 import itertools
 
-import torchvision.transforms as transforms
 from torchvision.utils import save_image
-
-from torch.utils.data import DataLoader
-from torchvision import datasets
+from data_loader import DatasetLoader
 from torch.autograd import Variable
 
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
 
-os.makedirs("images/static/", exist_ok=True)
-os.makedirs("images/varying_c1/", exist_ok=True)
-os.makedirs("images/varying_c2/", exist_ok=True)
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--path",type=str,default='./dataset',help="Path of the dataset")
 parser.add_argument("--n_epochs", type=int, default=200, help="number of epochs of training")
 parser.add_argument("--batch_size", type=int, default=64, help="size of the batches")
 parser.add_argument("--lr", type=float, default=0.0002, help="adam: learning rate")
@@ -30,10 +24,15 @@ parser.add_argument("--latent_dim", type=int, default=62, help="dimensionality o
 parser.add_argument("--code_dim", type=int, default=2, help="latent code")
 parser.add_argument("--n_classes", type=int, default=10, help="number of classes for dataset")
 parser.add_argument("--img_size", type=int, default=32, help="size of each image dimension")
-parser.add_argument("--channels", type=int, default=1, help="number of image channels")
+parser.add_argument("--channels", type=int, default=3, help="number of image channels")
 parser.add_argument("--sample_interval", type=int, default=400, help="interval between image sampling")
 opt = parser.parse_args()
+
 print(opt)
+filename = os.path.basename(__file__).split('.')[0]
+os.makedirs(f"./images/{filename}/{opt.img_size}x{opt.img_size}/static", exist_ok=True)
+os.makedirs(f"./images/{filename}/{opt.img_size}x{opt.img_size}/varying_c1", exist_ok=True)
+os.makedirs(f"./images/{filename}/{opt.img_size}x{opt.img_size}/varying_c2", exist_ok=True)
 
 cuda = True if torch.cuda.is_available() else False
 
@@ -146,19 +145,8 @@ generator.apply(weights_init_normal)
 discriminator.apply(weights_init_normal)
 
 # Configure data loader
-os.makedirs("../../data/mnist", exist_ok=True)
-dataloader = torch.utils.data.DataLoader(
-    datasets.MNIST(
-        "../../data/mnist",
-        train=True,
-        download=True,
-        transform=transforms.Compose(
-            [transforms.Resize(opt.img_size), transforms.ToTensor(), transforms.Normalize([0.5], [0.5])]
-        ),
-    ),
-    batch_size=opt.batch_size,
-    shuffle=True,
-)
+dl=DatasetLoader(opt.path,batch_size=opt.batch_size)
+dataloader = dl.get_train() 
 
 # Optimizers
 optimizer_G = torch.optim.Adam(generator.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))
@@ -178,12 +166,12 @@ static_label = to_categorical(
 static_code = Variable(FloatTensor(np.zeros((opt.n_classes ** 2, opt.code_dim))))
 
 
-def sample_image(n_row, batches_done):
+def sample_image(n_row, epoch):
     """Saves a grid of generated digits ranging from 0 to n_classes"""
     # Static sample
     z = Variable(FloatTensor(np.random.normal(0, 1, (n_row ** 2, opt.latent_dim))))
     static_sample = generator(z, static_label, static_code)
-    save_image(static_sample.data, "images/static/%d.png" % batches_done, nrow=n_row, normalize=True)
+    save_image(static_sample.data, f"images/{filename}/{opt.img_size}x{opt.img_size}/static/{epoch}.png", nrow=n_row, normalize=True)
 
     # Get varied c1 and c2
     zeros = np.zeros((n_row ** 2, 1))
@@ -192,8 +180,8 @@ def sample_image(n_row, batches_done):
     c2 = Variable(FloatTensor(np.concatenate((zeros, c_varied), -1)))
     sample1 = generator(static_z, static_label, c1)
     sample2 = generator(static_z, static_label, c2)
-    save_image(sample1.data, "images/varying_c1/%d.png" % batches_done, nrow=n_row, normalize=True)
-    save_image(sample2.data, "images/varying_c2/%d.png" % batches_done, nrow=n_row, normalize=True)
+    save_image(sample1.data, f"images/{filename}/{opt.img_size}x{opt.img_size}/varying_c1/{epoch}.png" , nrow=n_row, normalize=True)
+    save_image(sample2.data, f"images/{filename}/{opt.img_size}x{opt.img_size}/varying_c2/{epoch}.png", nrow=n_row, normalize=True)
 
 
 # ----------
@@ -285,10 +273,10 @@ for epoch in range(opt.n_epochs):
         # Log Progress
         # --------------
 
-        print(
-            "[Epoch %d/%d] [Batch %d/%d] [D loss: %f] [G loss: %f] [info loss: %f]"
-            % (epoch, opt.n_epochs, i, len(dataloader), d_loss.item(), g_loss.item(), info_loss.item())
-        )
-        batches_done = epoch * len(dataloader) + i
-        if batches_done % opt.sample_interval == 0:
-            sample_image(n_row=10, batches_done=batches_done)
+    print(
+        "[Epoch %d/%d][D loss: %f] [G loss: %f]"
+        % (epoch, opt.n_epochs, d_loss.item(), g_loss.item())
+    )
+    if not epoch%opt.sample_interval:
+        sample_image(n_row=10, epoch=epoch)
+sample_image(n_row=10, epoch=epoch)
