@@ -1,15 +1,12 @@
 import torch
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
-
 import os
 
 class DatasetLoader:
     def __init__(self,path,batch_size):
-        transform=transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
-        ])
+        transformations = [transforms.ToTensor(),transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])]
+        transform=transforms.Compose(transformations)
         
         self.train_ds = datasets.ImageFolder(root=os.path.join(path,'train'),transform=transform) 
         self.test_ds = datasets.ImageFolder(root=os.path.join(path,'test'),transform=transform) 

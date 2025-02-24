@@ -1,22 +1,20 @@
+# Reference: https://wiseodd.github.io/techblog/2017/03/07/boundary-seeking-gan/
+
 import argparse
 import os
 import numpy as np
-import math
-
 
 from torchvision.utils import save_image
-from data_loader import DatasetLoader
+from utils.data_loader import DatasetLoader
 
 from torch.autograd import Variable
 
 import torch.nn as nn
-import torch.nn.functional as F
 import torch
-
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--path",type=str,default='./dataset',help="Path of the dataset")
+parser.add_argument("--load",type=bool,default=False,help='Load pretrained weights')
 parser.add_argument("--n_epochs", type=int, default=200, help="number of epochs of training")
 parser.add_argument("--batch_size", type=int, default=64, help="size of the batches")
 parser.add_argument("--lr", type=float, default=0.0002, help="adam: learning rate")
@@ -29,9 +27,13 @@ parser.add_argument("--channels", type=int, default=3, help="number of image cha
 parser.add_argument("--sample_interval", type=int, default=400, help="interval betwen image samples")
 opt = parser.parse_args()
 print(opt)
-filename = os.path.basename(__file__).split('.')[0]
-os.makedirs(f"./images/{filename}/{opt.img_size}x{opt.img_size}", exist_ok=True)
 
+filename = os.path.basename(__file__).split('.')[0]
+base_path = f'{filename}/{opt.img_size}x{opt.img_size}'
+models_path = f'models/{base_path}'
+images_path = f'images/{base_path}'
+os.makedirs(images_path, exist_ok=True)
+os.makedirs(models_path,exist_ok=True)
 img_shape = (opt.channels, opt.img_size, opt.img_size)
 
 cuda = True if torch.cuda.is_available() else False
@@ -68,25 +70,29 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
 
         self.model = nn.Sequential(
-            nn.Linear(opt.img_size ** 2, 512),
+            nn.Linear(int(np.prod(img_shape)), 512),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Linear(512, 256),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Linear(256, 1),
+            nn.Sigmoid(),
         )
 
     def forward(self, img):
-        print(img.shape)
         img_flat = img.view(img.shape[0], -1)
-        print(img_flat.shape)
-        print(opt.img_size**2)
         validity = self.model(img_flat)
-
         return validity
 
 
-# Loss function
-adversarial_loss = torch.nn.BCELoss()
+def boundary_seeking_loss(y_pred, y_true):
+    """
+    Boundary seeking loss.
+    Reference: https://wiseodd.github.io/techblog/2017/03/07/boundary-seeking-gan/
+    """
+    return 0.5 * torch.mean((torch.log(y_pred) - torch.log(1 - y_pred)) ** 2)
+
+
+discriminator_loss = torch.nn.BCELoss()
 
 # Initialize generator and discriminator
 generator = Generator()
@@ -95,7 +101,7 @@ discriminator = Discriminator()
 if cuda:
     generator.cuda()
     discriminator.cuda()
-    adversarial_loss.cuda()
+    discriminator_loss.cuda()
 
 # Configure data loader
 dl=DatasetLoader(opt.path,batch_size=opt.batch_size)
@@ -107,50 +113,47 @@ optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=opt.lr, betas=(opt
 
 Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 
-
-def log(x):
-    return torch.log(x + 1e-8)
-
-
-# ----------
-#  Training
-# ----------
-
 for epoch in range(opt.n_epochs):
     for i, (imgs, _) in enumerate(dataloader):
 
-        optimizer_G.zero_grad()
-        optimizer_D.zero_grad()
-
-        batch_size = imgs.shape[0]
-
         # Adversarial ground truths
-        g_target = 1 / (batch_size * 2)
-        d_target = 1 / batch_size
+        valid = Variable(Tensor(imgs.shape[0], 1).fill_(1.0), requires_grad=False)
+        fake = Variable(Tensor(imgs.shape[0], 1).fill_(0.0), requires_grad=False)
 
         # Configure input
         real_imgs = Variable(imgs.type(Tensor))
 
+        # -----------------
+        #  Train Generator
+        # -----------------
+
+        optimizer_G.zero_grad()
+
         # Sample noise as generator input
         z = Variable(Tensor(np.random.normal(0, 1, (imgs.shape[0], opt.latent_dim))))
+
         # Generate a batch of images
         gen_imgs = generator(z)
 
-        d_real = discriminator(real_imgs)
-        d_fake = discriminator(gen_imgs)
+        # Loss measures generator's ability to fool the discriminator
+        g_loss = boundary_seeking_loss(discriminator(gen_imgs), valid)
 
-        # Partition function
-        Z = torch.sum(torch.exp(-d_real)) + torch.sum(torch.exp(-d_fake))
-
-        # Calculate loss of discriminator and update
-        d_loss = d_target * torch.sum(d_real) + log(Z)
-        d_loss.backward(retain_graph=True)
-        optimizer_D.step()
-
-        # Calculate loss of generator and update
-        g_loss = g_target * (torch.sum(d_real) + torch.sum(d_fake)) + log(Z)
         g_loss.backward()
         optimizer_G.step()
+
+        # ---------------------
+        #  Train Discriminator
+        # ---------------------
+
+        optimizer_D.zero_grad()
+
+        # Measure discriminator's ability to classify real from generated samples
+        real_loss = discriminator_loss(discriminator(real_imgs), valid)
+        fake_loss = discriminator_loss(discriminator(gen_imgs.detach()), fake)
+        d_loss = (real_loss + fake_loss) / 2
+
+        d_loss.backward()
+        optimizer_D.step()
 
     print(
         "[Epoch %d/%d][D loss: %f] [G loss: %f]"
@@ -158,5 +161,5 @@ for epoch in range(opt.n_epochs):
     )
 
     if not epoch % opt.sample_interval:
-        save_image(gen_imgs.data[:25], f"./images/{filename}/{opt.img_size}x{opt.img_size}/{epoch}.png",nrow=5, normalize=True)
-save_image(gen_imgs.data[:25], f"./images/{filename}/{opt.img_size}x{opt.img_size}/{epoch}.png",nrow=5, normalize=True)
+        save_image(gen_imgs.data[:25], f"./{images_path}/{epoch}.png",nrow=5, normalize=True)
+save_image(gen_imgs.data[:25], f"./{images_path}/{epoch}.png",nrow=5, normalize=True)

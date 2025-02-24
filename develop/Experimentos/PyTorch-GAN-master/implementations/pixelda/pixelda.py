@@ -10,16 +10,15 @@ from torchvision.utils import save_image
 from torch.utils.data import DataLoader
 from torchvision import datasets
 from torch.autograd import Variable
-
-from mnistm import MNISTM
+from data_loader import DatasetLoader
 
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
 
-os.makedirs("images", exist_ok=True)
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--path",type=str,default='./dataset',help="Path of the dataset")
 parser.add_argument("--n_epochs", type=int, default=200, help="number of epochs of training")
 parser.add_argument("--batch_size", type=int, default=64, help="size of the batches")
 parser.add_argument("--lr", type=float, default=0.0002, help="adam: learning rate")
@@ -34,7 +33,8 @@ parser.add_argument("--n_classes", type=int, default=10, help="number of classes
 parser.add_argument("--sample_interval", type=int, default=300, help="interval betwen image samples")
 opt = parser.parse_args()
 print(opt)
-
+filename = os.path.basename(__file__).split('.')[0]
+os.makedirs(f"./images/{filename}/{opt.img_size}x{opt.img_size}", exist_ok=True)
 # Calculate output of image discriminator (PatchGAN)
 patch = int(opt.img_size / 2 ** 4)
 patch = (1, patch, patch)
@@ -168,38 +168,9 @@ discriminator.apply(weights_init_normal)
 classifier.apply(weights_init_normal)
 
 # Configure data loader
-os.makedirs("../../data/mnist", exist_ok=True)
-dataloader_A = torch.utils.data.DataLoader(
-    datasets.MNIST(
-        "../../data/mnist",
-        train=True,
-        download=True,
-        transform=transforms.Compose(
-            [transforms.Resize(opt.img_size), transforms.ToTensor(), transforms.Normalize([0.5], [0.5])]
-        ),
-    ),
-    batch_size=opt.batch_size,
-    shuffle=True,
-)
-
-os.makedirs("../../data/mnistm", exist_ok=True)
-dataloader_B = torch.utils.data.DataLoader(
-    MNISTM(
-        "../../data/mnistm",
-        train=True,
-        download=True,
-        transform=transforms.Compose(
-            [
-                transforms.Resize(opt.img_size),
-                transforms.ToTensor(),
-                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-            ]
-        ),
-    ),
-    batch_size=opt.batch_size,
-    shuffle=True,
-)
-
+dl=DatasetLoader(opt.path,batch_size=opt.batch_size)
+dataloader_A = dl.get_train() 
+dataloader_B = dl.get_train()
 # Optimizers
 optimizer_G = torch.optim.Adam(
     itertools.chain(generator.parameters(), classifier.parameters()), lr=opt.lr, betas=(opt.b1, opt.b2)
@@ -302,7 +273,12 @@ for epoch in range(opt.n_epochs):
             )
         )
 
-        batches_done = len(dataloader_A) * epoch + i
-        if batches_done % opt.sample_interval == 0:
+        if not epoch % opt.sample_interval:
             sample = torch.cat((imgs_A.data[:5], fake_B.data[:5], imgs_B.data[:5]), -2)
-            save_image(sample, "images/%d.png" % batches_done, nrow=int(math.sqrt(batch_size)), normalize=True)
+            save_image(sample, f"./images/{filename}/{opt.img_size}x{opt.img_size}/{epoch}.png", nrow=int(math.sqrt(batch_size)), normalize=True)
+
+    if not epoch % opt.sample_interval:
+        sample = torch.cat((imgs_A.data[:5], fake_B.data[:5], imgs_B.data[:5]), -2)
+        save_image(sample, f"./images/{filename}/{opt.img_size}x{opt.img_size}/{epoch}.png", nrow=int(math.sqrt(batch_size)), normalize=True)
+sample = torch.cat((imgs_A.data[:5], fake_B.data[:5], imgs_B.data[:5]), -2)
+save_image(sample, f"./images/{filename}/{opt.img_size}x{opt.img_size}/{epoch}.png", nrow=int(math.sqrt(batch_size)), normalize=True)

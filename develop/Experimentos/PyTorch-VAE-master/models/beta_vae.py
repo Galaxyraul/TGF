@@ -10,15 +10,15 @@ class BetaVAE(BaseVAE):
     num_iter = 0 # Global static variable to keep track of iterations
 
     def __init__(self,
-                 in_channels: int,
-                 latent_dim: int,
-                 hidden_dims: List = None,
-                 beta: int = 4,
-                 gamma:float = 1000.,
-                 max_capacity: int = 25,
-                 Capacity_max_iter: int = 1e5,
-                 loss_type:str = 'B',
-                 **kwargs) -> None:
+                in_channels: int,
+                latent_dim: int,
+                hidden_dims: List = None,
+                beta: int = 4,
+                gamma:float = 1000.,
+                max_capacity: int = 25,
+                Capacity_max_iter: int = 1e5,
+                loss_type:str = 'B',
+                **kwargs) -> None:
         super(BetaVAE, self).__init__()
 
         self.latent_dim = latent_dim
