@@ -30,6 +30,10 @@ parser.add_argument("--sample_interval", type=int, default=400, help="interval b
 opt = parser.parse_args()
 
 print(opt)
+filename = os.path.basename(__file__).split('.')[0]
+os.makedirs(f"./images/{filename}/{opt.img_size}x{opt.img_size}/static", exist_ok=True)
+os.makedirs(f"./images/{filename}/{opt.img_size}x{opt.img_size}/varying_c1", exist_ok=True)
+os.makedirs(f"./images/{filename}/{opt.img_size}x{opt.img_size}/varying_c2", exist_ok=True)
 
 filename = os.path.basename(__file__).split('.')[0]
 base_path = f'{filename}/{opt.img_size}x{opt.img_size}'
@@ -292,7 +296,6 @@ for epoch in range(opt.n_epochs):
         "[Epoch %d/%d][D loss: %f] [G loss: %f] [B FID:%f] [W FID:%f]"
         % (epoch, opt.n_epochs, d_loss.item(), g_loss.item(),best_fid,worst_fid)
     )
-
 
     if not epoch%opt.sample_interval:
         sample_image(n_row=10, epoch=epoch)

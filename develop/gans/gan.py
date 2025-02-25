@@ -24,6 +24,8 @@ parser.add_argument("--channels", type=int, default=3, help="number of image cha
 parser.add_argument("--sample_interval", type=int, default=400, help="interval betwen image samples")
 opt = parser.parse_args()
 print(opt)
+filename = os.path.basename(__file__).split('.')[0]
+os.makedirs(f"./images/{filename}/{opt.img_size}x{opt.img_size}", exist_ok=True)
 
 filename = os.path.basename(__file__).split('.')[0]
 base_path = f'{filename}/{opt.img_size}x{opt.img_size}'
