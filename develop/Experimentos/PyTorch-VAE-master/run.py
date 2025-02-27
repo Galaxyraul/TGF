@@ -30,7 +30,7 @@ with open(args.filename, 'r') as file:
 
 
 tb_logger =  TensorBoardLogger(save_dir=config['logging_params']['save_dir'],
-                               name=config['model_params']['name'],)
+                            name=config['model_params']['name'],)
 
 # For reproducibility
 seed_everything(config['exp_params']['manual_seed'], True)

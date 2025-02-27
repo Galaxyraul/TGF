@@ -13,7 +13,6 @@ from torch.utils.data import DataLoader
 
 
 class VAEXperiment(pl.LightningModule):
-
     def __init__(self,
                  vae_model: BaseVAE,
                  params: dict) -> None:

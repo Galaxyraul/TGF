@@ -1,0 +1,14 @@
+{
+    "sizes":[16,32,64],
+    "sample_interval":10,
+    "batch_size":16,
+    "epochs":200,
+    "configs_path":"./configs",
+    "data_path":"../datasets_test",
+    "models_saved":"./models_saved",
+    "images_saved":"./images",
+    "n_cpu":4,
+    "resume":false,
+    "log_folder":"./logs",
+    "times_file":"./times.csv"
+}
