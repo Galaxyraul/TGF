@@ -4,6 +4,7 @@ import json
 import os
 import time
 import csv
+import torch
 class experiment():
     def __init__(self,config):
         self.sizes = config['sizes']
@@ -17,10 +18,14 @@ class experiment():
         self.images_path=config['images_saved']
         self.models_configs = {}
         for c_file in os.listdir(config['configs_path']):
+            print(f'Opening {c_file}')
             with open(os.path.join(config['configs_path'],c_file),'r') as f:
-                self.models_configs[c_file.split('.')[0]] = json.load(f)
+                try:
+                    self.models_configs[c_file.split('.')[0]] = json.load(f)
+                except:
+                    self.models_configs[c_file.split('.')[0]] = []
         print(self.models_configs)
-        self.times_path = config['times_path']
+        self.times_path = config['times_file']
         self.log_path = config['log_folder']
         with open (self.times_path,'w') as f:
             writer = csv.writer(f)
@@ -35,6 +40,7 @@ class experiment():
                 model = models[key](data,self.models_configs[key],size,self.sample_interval,f'{self.models_saved}/{key}/{size}x{size}',self.resume,f'{self.images_path}/{key}/{size}x{size}')
                 model.train(self.n_epochs)
                 end = time.time()
+                torch.cuda.empty_cache()
                 print(f'Tiempo tomado para el modelo {key}:{end-start}s')
 with open('run.json','r') as f:
     config = json.load(f)

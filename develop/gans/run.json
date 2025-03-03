@@ -1,5 +1,5 @@
 {
-    "sizes":[16,32,64],
+    "sizes":[32],
     "sample_interval":10,
     "batch_size":16,
     "epochs":200,
