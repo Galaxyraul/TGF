@@ -9,11 +9,17 @@ import torch.nn as nn
 import torch
 
 class AAE():
-    def __init__(self,dataloader,params,size,sample_interval,models_path,resume,images_path):
+    def __init__(self,dataloader,params,exp_config,size):
+        if torch.cuda.is_available():
+            self.device='cuda'
+        else:
+            exit()
+        self.sample_interval = exp_config['sample_interval']
+        key = __file__.split('.')[0]
+        self.models_path = f'{exp_config['models_saved']}/{key}/{size}x{size}'
+        self.resume = exp_config['resume']
+        self.images_path = f'{exp_config['images_saved']}/{key}/{size}x{size}'
         self.dataloader = dataloader
-        self.images_path = images_path
-        self.models_path = models_path
-        self.sample_interval = sample_interval
         os.makedirs(self.models_path,exist_ok=True)
         os.makedirs(self.images_path,exist_ok=True)
         
@@ -29,7 +35,7 @@ class AAE():
         self.decoder = Decoder(self.img_shape,self.latent_dim).to(device=self.device)
         self.discriminator = Discriminator(self.latent_dim).to(device=self.device)
         self.params = params
-        if resume:
+        if self.resume:
             self.encoder.load_state_dict(torch.load(f'{self.models_path}/encoder.pth'))
             self.decoder.load_state_dict(torch.load(f'{self.models_path}/decoder.pth'))
             self.discriminator.load_state_dict(torch.load(f'{self.models_path}/discriminator.pth'))

@@ -10,12 +10,8 @@ class experiment():
         self.sizes = config['sizes']
         self.data_path = config['data_path']
         self.n_cpu = config['n_cpu']
-        self.models_saved = config['models_saved']
-        self.sample_interval = config['sample_interval']
-        self.resume = config['resume']
-        self.batch_size = config['batch_size']  
         self.n_epochs = config['epochs'] 
-        self.images_path=config['images_saved']
+        self.batch_size = config['batch_size']
         self.models_configs = {}
         for c_file in os.listdir(config['configs_path']):
             print(f'Opening {c_file}')
@@ -37,7 +33,7 @@ class experiment():
             print('Dataset Loaded')
             for key in models.keys():
                 start = time.time()
-                model = models[key](data,self.models_configs[key],size,self.sample_interval,f'{self.models_saved}/{key}/{size}x{size}',self.resume,f'{self.images_path}/{key}/{size}x{size}')
+                model = models[key](data,self.models_configs[key],config,size)
                 model.train(self.n_epochs)
                 end = time.time()
                 torch.cuda.empty_cache()

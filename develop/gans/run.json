@@ -1,7 +1,7 @@
 {
-    "sizes":[32],
+    "sizes":[16],
     "sample_interval":10,
-    "batch_size":16,
+    "batch_size":32,
     "epochs":200,
     "configs_path":"./configs",
     "data_path":"../datasets_test",

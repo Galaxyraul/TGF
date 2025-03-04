@@ -1,0 +1,11 @@
+{
+    "lr":0.005,
+    "b1":0.5,
+    "b2":0.999,
+    "latent_dim":100,
+    "channels":3,
+    "n_classes":1,
+    "lambda_cat":1,
+    "lambda_con":0.1,
+    "code_dim":2
+}
