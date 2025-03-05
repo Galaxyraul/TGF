@@ -12,6 +12,10 @@ class experiment():
         self.n_cpu = config['n_cpu']
         self.n_epochs = config['epochs'] 
         self.batch_size = config['batch_size']
+        if config['execute_selected']:
+            self.to_execute = config['to_execute']
+        else:
+            self.to_execute = models.keys()
         self.models_configs = {}
         for c_file in os.listdir(config['configs_path']):
             print(f'Opening {c_file}')
@@ -31,7 +35,7 @@ class experiment():
         for size in self.sizes:
             data = DatasetLoader(self.data_path+f'/{size}x{size}',self.batch_size,self.n_cpu).get_train()
             print('Dataset Loaded')
-            for key in models.keys():
+            for key in self.to_execute:
                 start = time.time()
                 model = models[key](data,self.models_configs[key],config,size)
                 model.train(self.n_epochs)

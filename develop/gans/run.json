@@ -10,5 +10,7 @@
     "n_cpu":4,
     "resume":false,
     "log_folder":"./logs",
-    "times_file":"./times.csv"
+    "times_file":"./times.csv",
+    "execute_selected":false,
+    "to_execute":["infogan"]
 }

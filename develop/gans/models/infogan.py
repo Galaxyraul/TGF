@@ -270,11 +270,3 @@ class Discriminator(nn.Module):
 
         return validity, label, latent_code
 
-
-
-# Static generator inputs for sampling
-
-
-# ----------
-#  Training
-# ----------
