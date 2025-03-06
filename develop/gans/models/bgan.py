@@ -120,7 +120,7 @@ class Generator(nn.Module):
             *block(256, 512),
             *block(512, 1024),
             nn.Linear(1024, int(np.prod(img_shape))),
-            nn.Tanh()
+            nn.Sigmoid()
         )
 
     def forward(self, z, img_shape):

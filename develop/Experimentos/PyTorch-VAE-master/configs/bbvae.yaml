@@ -8,7 +8,7 @@ model_params:
   Capacity_max_iter: 10000
 
 data_params:
-  data_path: "./datasets_test/64x64"
+  data_path: "../..//datasets_test/64x64"
   train_batch_size: 64
   val_batch_size:  64
   patch_size: 64

@@ -6,16 +6,17 @@ from typing import List, Optional, Sequence, Union, Any, Callable
 from torchvision.datasets.folder import default_loader
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
-from torchvision import transforms
+from torchvision import transforms,datasets
 from torchvision.datasets import CelebA
 import zipfile
 
 
 # Add your custom dataset class here
 class MyDataset(Dataset):
-    def __init__(self):
-        pass
-    
+    def __init__(self,data_path: str, split: str,transform: Callable):
+        self.data_dir = Path(data_path) / split
+        self.transforms = transform
+        self.imgs = datasets.ImageFolder(self.data_dir,transform=transform) 
     
     def __len__(self):
         pass
@@ -126,29 +127,26 @@ class VAEDataset(LightningDataModule):
         
 #       =========================  CelebA Dataset  =========================
     
-        train_transforms = transforms.Compose([transforms.RandomHorizontalFlip(),
-                                              transforms.CenterCrop(148),
-                                              transforms.Resize(self.patch_size),
-                                              transforms.ToTensor(),])
+        process_transforms = transforms.Compose(
+                                              [transforms.ToTensor()])
         
-        val_transforms = transforms.Compose([transforms.RandomHorizontalFlip(),
-                                            transforms.CenterCrop(148),
-                                            transforms.Resize(self.patch_size),
-                                            transforms.ToTensor(),])
-        
-        self.train_dataset = MyCelebA(
+        self.train_dataset = MyDataset(
             self.data_dir,
             split='train',
-            transform=train_transforms,
-            download=False,
+            transform=process_transforms
         )
         
         # Replace CelebA with your dataset
-        self.val_dataset = MyCelebA(
+        self.val_dataset = MyDataset(
             self.data_dir,
             split='test',
-            transform=val_transforms,
-            download=False,
+            transform=process_transforms
+        )
+        
+        self.test_dataset = MyDataset(
+            self.data_dir,
+            split='val',
+            transform=process_transforms
         )
 #       ===============================================================
         
@@ -178,4 +176,3 @@ class VAEDataset(LightningDataModule):
             shuffle=True,
             pin_memory=self.pin_memory,
         )
-     
