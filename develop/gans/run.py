@@ -31,17 +31,22 @@ class experiment():
             writer = csv.writer(f)
             writer.writerow(['Model&Key','ex_time'])
         os.makedirs(self.log_path,exist_ok=True)
+        
     def train(self):
         for size in self.sizes:
             data = DatasetLoader(self.data_path+f'/{size}x{size}',self.batch_size,self.n_cpu).get_train()
             print('Dataset Loaded')
             for key in self.to_execute:
-                start = time.time()
-                model = models[key](data,self.models_configs[key],config,size)
-                model.train(self.n_epochs)
-                end = time.time()
-                torch.cuda.empty_cache()
-                print(f'Tiempo tomado para el modelo {key}:{end-start}s')
+                try:
+                    start = time.time()
+                    model = models[key](data,self.models_configs[key],config,size)
+                    model.train(self.n_epochs)
+                    end = time.time()
+                    torch.cuda.empty_cache()
+                    print(f'Tiempo tomado para el modelo {key}:{end-start}s')
+                except:
+                    print(f'Fallo en el modelo {key}')
+    
 with open('run.json','r') as f:
     config = json.load(f)
 exp = experiment(config)

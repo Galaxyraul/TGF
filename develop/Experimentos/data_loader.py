@@ -7,7 +7,7 @@ class DatasetLoader:
     def __init__(self,path,batch_size,norm):
         transformations = [transforms.ToTensor()]
         if norm:
-            transformations.append(transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225]))
+            transformations.append(transforms.Normalize(mean=[0.5789, 0.6016, 0.6047],std=[0.2234, 0.2207, 0.2316]))
         transform=transforms.Compose(transformations)
         
         self.train_ds = datasets.ImageFolder(root=os.path.join(path,'train'),transform=transform) 

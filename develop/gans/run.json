@@ -1,8 +1,8 @@
 {
-    "sizes":[16],
+    "sizes":[64],
     "sample_interval":10,
     "batch_size":32,
-    "epochs":200,
+    "epochs":400,
     "configs_path":"./configs",
     "data_path":"../datasets_test",
     "models_saved":"./models_saved",
@@ -11,6 +11,6 @@
     "resume":false,
     "log_folder":"./logs",
     "times_file":"./times.csv",
-    "execute_selected":false,
-    "to_execute":["infogan"]
+    "execute_selected":true,
+    "to_execute":["bgan"]
 }

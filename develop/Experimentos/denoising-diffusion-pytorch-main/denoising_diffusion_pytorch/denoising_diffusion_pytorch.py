@@ -481,16 +481,18 @@ class GaussianDiffusion(Module):
         model,
         *,
         image_size,
-        timesteps = 1000,
-        sampling_timesteps = None,
-        objective = 'pred_v',
-        beta_schedule = 'sigmoid',
+        timesteps = 1000,#forward noise steps
+        sampling_timesteps = None,#backward noise steps
+        objective = 'pred_v',#Sets what to learn how to denoise how to reconstruct image or how to add noise
+        beta_schedule = 'sigmoid',#Controls the evolution of the variance over time
         schedule_fn_kwargs = dict(),
-        ddim_sampling_eta = 0.,
+        ddim_sampling_eta = 0.,#improves training with faster sampling making it deterministic
         auto_normalize = True,
-        offset_noise_strength = 0.,  # https://www.crosslabs.org/blog/diffusion-with-offset-noise
-        min_snr_loss_weight = False, # https://arxiv.org/abs/2303.09556
-        min_snr_gamma = 5,
+        # https://www.crosslabs.org/blog/diffusion-with-offset-noise
+        offset_noise_strength = 0., #Adds random noise to make more robust the model  
+        # https://arxiv.org/abs/2303.09556
+        min_snr_loss_weight = False, #Improves training with a new loss and focusing on samples rather than noise
+        min_snr_gamma = 5, #hyperparameter of snr
         immiscible = False
     ):
         super().__init__()
@@ -521,7 +523,7 @@ class GaussianDiffusion(Module):
             raise ValueError(f'unknown beta schedule {beta_schedule}')
 
         betas = beta_schedule_fn(timesteps, **schedule_fn_kwargs)
-
+        #Alpha represents how much of the original image is kept
         alphas = 1. - betas
         alphas_cumprod = torch.cumprod(alphas, dim=0)
         alphas_cumprod_prev = F.pad(alphas_cumprod[:-1], (1, 0), value = 1.)
@@ -670,6 +672,7 @@ class GaussianDiffusion(Module):
         model_mean, posterior_variance, posterior_log_variance = self.q_posterior(x_start = x_start, x_t = x, t = t)
         return model_mean, posterior_variance, posterior_log_variance, x_start
 
+    #TODO
     @torch.inference_mode()
     def p_sample(self, x, t: int, x_self_cond = None):
         b, *_, device = *x.shape, self.device

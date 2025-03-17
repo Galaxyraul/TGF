@@ -13,5 +13,7 @@ develop/dnnlib
 *images*/
 *.idea*/
 *logs*/
-*models*/
+*models_saved*/
 executed.txt
+*data.zip*
+*processed*/
