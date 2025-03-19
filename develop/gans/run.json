@@ -1,8 +1,10 @@
 {
-    "sizes":[64],
+    "sizes":[300],
     "sample_interval":10,
     "batch_size":32,
     "epochs":400,
+    "mean":[],
+    "std":[],
     "configs_path":"./configs",
     "data_path":"../datasets_test",
     "models_saved":"./models_saved",
@@ -12,5 +14,5 @@
     "log_folder":"./logs",
     "times_file":"./times.csv",
     "execute_selected":true,
-    "to_execute":["bgan"]
+    "to_execute":["aae"]
 }

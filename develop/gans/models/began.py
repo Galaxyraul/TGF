@@ -150,7 +150,7 @@ class Generator(nn.Module):
             nn.Conv2d(64, channels, 3, stride=1, padding=1),
             nn.Tanh(),
         )
-
+        
     def forward(self, noise):
         out = self.l1(noise)
         out = out.view(out.shape[0], 128, self.init_size, self.init_size)

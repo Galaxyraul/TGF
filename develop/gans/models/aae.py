@@ -51,7 +51,7 @@ class AAE():
             best_fid = np.inf
             worst_fid=0
             for i, (imgs, _) in enumerate(self.dataloader):
-                # Adversarial ground truths
+                # Etiquetas para el discriminador (verdadero o falso)
                 valid = Variable(self.Tensor(imgs.shape[0], 1).fill_(1.0), requires_grad=False)
                 fake = Variable(self.Tensor(imgs.shape[0], 1).fill_(0.0), requires_grad=False)
 
@@ -83,7 +83,6 @@ class AAE():
 
                 # Sample noise as discriminator ground truth
                 z = Variable(self.Tensor(np.random.normal(0, 1, (imgs.shape[0], self.latent_dim))))
-
                 # Measure discriminator's ability to classify real from generated samples
                 real_loss = self.adversarial_loss(self.discriminator(z), valid)
                 fake_loss = self.adversarial_loss(self.discriminator(encoded_imgs.detach()), fake)
@@ -123,7 +122,7 @@ class AAE():
 
 
 class Encoder(nn.Module):
-    def __init__(self,img_shape):
+    def __init__(self,img_shape,latent_dim):
         super(Encoder, self).__init__()
 
         self.model = nn.Sequential(
@@ -134,8 +133,8 @@ class Encoder(nn.Module):
             nn.LeakyReLU(0.2, inplace=True),
         )
 
-        self.mu = nn.Linear(512, opt.latent_dim)
-        self.logvar = nn.Linear(512, opt.latent_dim)
+        self.mu = nn.Linear(512,latent_dim)
+        self.logvar = nn.Linear(512,latent_dim)
 
     def forward(self, img,reparameterization):
         img_flat = img.view(img.shape[0], -1)
